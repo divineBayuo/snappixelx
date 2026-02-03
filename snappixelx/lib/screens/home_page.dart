@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:snappixelx/core/constants.dart';
+import 'package:snappixelx/widgets/footer.dart';
 import 'package:snappixelx/widgets/navbar.dart';
 
 class Homepage extends StatefulWidget {
@@ -66,7 +67,7 @@ class _HomepageState extends State<Homepage> {
                 ),
 
                 // services section
-                const SizedBox(height: 60),
+                const SizedBox(height: 75),
                 Text(
                   'Services',
                   style: GoogleFonts.playfair(
@@ -90,7 +91,7 @@ class _HomepageState extends State<Homepage> {
                 ),
 
                 // about section
-                const SizedBox(height: 60),
+                const SizedBox(height: 75),
                 Text(
                   'About Us',
                   style: GoogleFonts.playfair(
@@ -146,7 +147,111 @@ class _HomepageState extends State<Homepage> {
                   ),
                 ),
 
-                const SizedBox(height: 80),
+                // socials section
+                const SizedBox(height: 75),
+                Container(
+                  decoration: BoxDecoration(color: Colors.white),
+                  child: Column(
+                    children: [
+                      Text(
+                        'Socials',
+                        style: GoogleFonts.playfair(
+                          textStyle: TextStyle(
+                            fontSize: 30,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                          ),
+                        ),
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          SizedBox(width: 80),
+                          Row(
+                            children: [
+                              Icon(Icons.camera_alt, color: Colors.purple),
+                              TextButton(
+                                onPressed: () {},
+                                child: Text(
+                                  'Instagram',
+                                  style: GoogleFonts.playfair(
+                                    textStyle: TextStyle(
+                                      color: Colors.purple,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(width: 5),
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.snapchat,
+                                color: Colors.amber.shade500,
+                              ),
+                              TextButton(
+                                onPressed: () {},
+                                child: Text(
+                                  'Snapchat',
+                                  style: GoogleFonts.playfair(
+                                    textStyle: TextStyle(
+                                      color: Colors.amber.shade500,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(width: 5),
+                          Row(
+                            children: [
+                              Icon(Icons.wechat, color: Colors.green),
+                              TextButton(
+                                onPressed: () {},
+                                child: Text(
+                                  'WhatsApp/Phone',
+                                  style: GoogleFonts.playfair(
+                                    textStyle: TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.green,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(width: 5),
+                          Row(
+                            children: [
+                              Icon(Icons.mail, color: Colors.black),
+                              TextButton(
+                                onPressed: () {},
+                                child: Text(
+                                  'Email',
+                                  style: GoogleFonts.playfair(
+                                    textStyle: TextStyle(
+                                      color: Colors.black,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(width: 80),
+                        ],
+                      ),
+                      SizedBox(height: 10),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 120),
+                const Footer(),
+                const SizedBox(height: 60),
               ],
             ),
           ),
