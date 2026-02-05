@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:snappixelx/widgets/hover_scale.dart';
 import 'package:snappixelx/widgets/navbar.dart';
 
 class Refpage extends StatefulWidget {
@@ -24,6 +25,19 @@ class _RefpageState extends State<Refpage> {
     return Scaffold(
       body: Stack(
         children: [
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Color(0xFF06050c),
+                  Color(0xFF24108d),
+                  Color(0xFF924e87),
+                ],
+                begin: Alignment.bottomCenter,
+                end: Alignment.topCenter,
+              ),
+            ),
+          ),
           Column(
             children: [
               SizedBox(height: 80), // for navbar
@@ -47,13 +61,16 @@ class _RefpageState extends State<Refpage> {
                   ),
                   itemCount: images.length,
                   itemBuilder: (context, index) {
-                    return ClipRRect(
-                      borderRadius: BorderRadius.circular(15),
-                      child: Image.asset(images[index], fit: BoxFit.cover),
+                    return HoverScale(
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(15),
+                        child: Image.asset(images[index], fit: BoxFit.cover),
+                      ),
                     );
                   },
                 ),
               ),
+
             ],
           ),
           // Sticky Navbar

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:snappixelx/widgets/hover_scale.dart';
 import 'package:snappixelx/widgets/navbar.dart';
 
 class Pricingpage extends StatefulWidget {
@@ -84,36 +85,41 @@ class _PricingpageState extends State<Pricingpage> {
   }
 
   Widget packageCard(String title, String price, List<String> features) {
-    return Container(
-      width: 200,
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.7),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Column(
-        children: [
-          Text(
-            title,
-            style: GoogleFonts.playfair(textStyle: TextStyle(fontSize: 22)),
-          ),
-          const SizedBox(height: 10),
-          Text(
-            price,
-            style: GoogleFonts.playfair(textStyle: TextStyle(fontSize: 30)),
-          ),
-          const SizedBox(height: 20),
-          ...features.map((f) => Text("• $f", style: GoogleFonts.playfair())),
-          const SizedBox(height: 20),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              foregroundColor: Colors.red,
-              backgroundColor: Colors.white,
+    return HoverScale(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        width: 200,
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.black.withOpacity(0.7),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Column(
+          children: [
+            Text(
+              title,
+              style: GoogleFonts.playfair(textStyle: TextStyle(fontSize: 22)),
             ),
-            onPressed: () {},
-            child: Text("Select", style: GoogleFonts.playfair()),
-          ),
-        ],
+            const SizedBox(height: 10),
+            Text(
+              price,
+              style: GoogleFonts.playfair(textStyle: TextStyle(fontSize: 30)),
+            ),
+            const SizedBox(height: 20),
+            ...features.map((f) => Text("• $f", style: GoogleFonts.playfair())),
+            const SizedBox(height: 20),
+            HoverScale(
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  foregroundColor: Colors.black,
+                  backgroundColor: Colors.white,
+                ),
+                onPressed: () {},
+                child: Text("Select", style: GoogleFonts.playfair()),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

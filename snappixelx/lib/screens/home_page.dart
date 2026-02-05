@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:snappixelx/core/constants.dart';
 import 'package:snappixelx/widgets/footer.dart';
+import 'package:snappixelx/widgets/hover_scale.dart';
 import 'package:snappixelx/widgets/navbar.dart';
 
 class Homepage extends StatefulWidget {
@@ -11,14 +13,58 @@ class Homepage extends StatefulWidget {
   State<Homepage> createState() => _HomepageState();
 }
 
-class _HomepageState extends State<Homepage> {
+class _HomepageState extends State<Homepage> with TickerProviderStateMixin {
   int selectedIndex = 0;
+  late AnimationController _heroController;
+  late Animation<double> _fadeAnimation;
+  late Animation<Offset> _slideAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _heroController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    );
+
+    _fadeAnimation = CurvedAnimation(
+      parent: _heroController,
+      curve: Curves.easeOut,
+    );
+
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(0, 0.3),
+      end: Offset.zero,
+    ).animate(_fadeAnimation);
+
+    _heroController.forward();
+  }
+
+  @override
+  void dispose() {
+    _heroController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Stack(
         children: [
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Color(0xFF06050c),
+                  Color(0xFF24108d),
+                  Color(0xFF924e87),
+                ],
+                begin: Alignment.bottomCenter,
+                end: Alignment.topCenter,
+              ),
+            ),
+          ),
           SingleChildScrollView(
             child: Column(
               children: [
@@ -32,35 +78,60 @@ class _HomepageState extends State<Homepage> {
                       fit: BoxFit.cover,
                     ),
                   ),
-                  child: Container(
-                    color: Colors.black.withOpacity(0.5),
-                    child: Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            'Capturing Timeless Moments...',
-                            style: GoogleFonts.playfair(
-                              textStyle: TextStyle(
-                                fontSize: 48,
-                                fontWeight: FontWeight.bold,
-                              ),
+                  child: TweenAnimationBuilder<double>(
+                    tween: Tween(begin: 1.0, end: 1.05),
+                    duration: const Duration(seconds: 2),
+                    builder: (context, scale, child) {
+                      return Transform.scale(scale: scale, child: child);
+                    },
+                    child: Container(
+                      color: Colors.black.withOpacity(0.5),
+                      child: Center(
+                        child: FadeTransition(
+                          opacity: _fadeAnimation,
+                          child: SlideTransition(
+                            position: _slideAnimation,
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  'Capturing Timeless Moments...',
+                                  style: GoogleFonts.playfair(
+                                    textStyle: TextStyle(
+                                      fontSize: 48,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 20),
+                                HoverScale(
+                                  child: ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      foregroundColor: Colors.black,
+                                      backgroundColor: Colors.white,
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 28,
+                                        vertical: 16,
+                                      ),
+                                      elevation: 10,
+                                    ),
+                                    onPressed: () => Navigator.pushNamed(
+                                      context,
+                                      "/booking",
+                                    ),
+                                    child: Text(
+                                      'Book Session',
+                                      style: GoogleFonts.playfair(
+                                        color: Colors.black,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                          const SizedBox(height: 20),
-                          ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              foregroundColor: Colors.black,
-                              backgroundColor: Colors.white,
-                            ),
-                            onPressed: () =>
-                                Navigator.pushNamed(context, "/booking"),
-                            child: Text(
-                              'Book Session',
-                              style: GoogleFonts.playfair(color: Colors.red),
-                            ),
-                          ),
-                        ],
+                        ),
                       ),
                     ),
                   ),
@@ -169,7 +240,10 @@ class _HomepageState extends State<Homepage> {
                           SizedBox(width: 80),
                           Row(
                             children: [
-                              Icon(Icons.camera_alt, color: Colors.purple),
+                              Icon(
+                                FontAwesomeIcons.instagram,
+                                color: Colors.purple,
+                              ),
                               TextButton(
                                 onPressed: () {},
                                 child: Text(
@@ -188,7 +262,7 @@ class _HomepageState extends State<Homepage> {
                           Row(
                             children: [
                               Icon(
-                                Icons.snapchat,
+                                FontAwesomeIcons.snapchat,
                                 color: Colors.amber.shade500,
                               ),
                               TextButton(
@@ -208,7 +282,10 @@ class _HomepageState extends State<Homepage> {
                           SizedBox(width: 5),
                           Row(
                             children: [
-                              Icon(Icons.wechat, color: Colors.green),
+                              Icon(
+                                FontAwesomeIcons.whatsapp,
+                                color: Colors.green,
+                              ),
                               TextButton(
                                 onPressed: () {},
                                 child: Text(
@@ -226,7 +303,7 @@ class _HomepageState extends State<Homepage> {
                           SizedBox(width: 5),
                           Row(
                             children: [
-                              Icon(Icons.mail, color: Colors.black),
+                              Icon(Icons.mail_outlined, color: Colors.black),
                               TextButton(
                                 onPressed: () {},
                                 child: Text(
@@ -260,11 +337,13 @@ class _HomepageState extends State<Homepage> {
             top: 0,
             left: 0,
             right: 0,
-            child: NavBar(
-              selectedIndex: selectedIndex,
-              onTabSelected: (index) {
-                setState(() => selectedIndex = index);
-              },
+            child: SafeArea(
+              child: NavBar(
+                selectedIndex: selectedIndex,
+                onTabSelected: (index) {
+                  setState(() => selectedIndex = index);
+                },
+              ),
             ),
           ),
         ],
@@ -273,23 +352,48 @@ class _HomepageState extends State<Homepage> {
   }
 
   Widget serviceCard(String title, String image) {
-    return Container(
-      width: 250,
-      height: 200,
-      decoration: BoxDecoration(
-        image: DecorationImage(image: AssetImage(image), fit: BoxFit.cover),
-        color: Colors.grey[900],
-        borderRadius: BorderRadius.circular(15),
-      ),
-      child: Container(
-        color: Colors.black.withOpacity(0.5),
-        child: Center(
-          child: Text(
-            title,
-            style: GoogleFonts.playfair(
-              textStyle: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              color: Colors.white,
+    return HoverScale(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        width: 250,
+        height: 200,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(15),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.3),
+              blurRadius: 15,
+              offset: const Offset(0, 8),
             ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(15),
+          child: Stack(
+            children: [
+              // zoom efx
+              Positioned.fill(child: Image.asset(image, fit: BoxFit.cover)),
+
+              // dark overlay
+              Positioned.fill(
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 250),
+                  color: Colors.black.withOpacity(0.45),
+                ),
+              ),
+
+              /// Title
+              Center(
+                child: Text(
+                  title,
+                  style: GoogleFonts.playfair(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),
