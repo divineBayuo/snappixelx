@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:snappixelx/core/responsive_helper.dart';
+import 'package:snappixelx/services/booking_service.dart';
 import 'package:snappixelx/widgets/hover_scale.dart';
 import 'package:snappixelx/widgets/navbar.dart';
 
 class Bookingpage extends StatefulWidget {
-  const Bookingpage({super.key});
+  final String? prefilledPackage;
+
+  const Bookingpage({super.key, this.prefilledPackage});
 
   @override
   State<Bookingpage> createState() => _BookingpageState();
@@ -21,6 +25,7 @@ class _BookingpageState extends State<Bookingpage> {
   final phoneController = TextEditingController();
   final emailController = TextEditingController();
   final dateController = TextEditingController();
+  final notesController = TextEditingController();
 
   String? selectedEvent;
   DateTime? selectedDate;
@@ -32,7 +37,17 @@ class _BookingpageState extends State<Bookingpage> {
     "Graduation",
     "Corporate",
     "Event Coverage",
+    "Other",
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    // pre-fill notes if package was selected
+    if (widget.prefilledPackage != null) {
+      notesController.text = 'Selected Package: ${widget.prefilledPackage}';
+    }
+  }
 
   @override
   void dispose() {
@@ -40,6 +55,7 @@ class _BookingpageState extends State<Bookingpage> {
     phoneController.dispose();
     emailController.dispose();
     dateController.dispose();
+    notesController.dispose();
     super.dispose();
   }
 
@@ -50,6 +66,18 @@ class _BookingpageState extends State<Bookingpage> {
       initialDate: DateTime.now(),
       firstDate: DateTime.now(),
       lastDate: DateTime(2030),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: ColorScheme.light(
+              primary: Colors.red,
+              onPrimary: Colors.white,
+              onSurface: Colors.black,
+            ),
+          ),
+          child: child!,
+        );
+      },
     );
 
     if (picked != null) {
@@ -66,31 +94,155 @@ class _BookingpageState extends State<Bookingpage> {
 
     setState(() => isSubmitting = true);
 
-    // backend simulation
-    await Future.delayed(const Duration(seconds: 1));
+    try {
+      // Create booking model
+      final booking = BookingModel(
+        name: nameController.text.trim(),
+        phone: phoneController.text.trim(),
+        email: emailController.text.trim(),
+        eventType: selectedEvent!,
+        date: selectedDate!,
+        notes: notesController.text.trim().isEmpty
+            ? null
+            : notesController.text.trim(),
+        packageName: widget.prefilledPackage,
+      );
 
-    final bookingDate = {
-      "name": nameController.text,
-      "phone": phoneController.text,
-      "email": emailController.text,
-      "eventType": selectedEvent,
-      "date": selectedDate,
-    };
+      // Submit to backend
+      final result = await BookingService.createBooking(booking);
 
-    debugPrint("Booking Date: $bookingDate");
+      if (result['success']) {
+        // Send confirmation email
+        await BookingService.sendBookingConfirmation(booking);
 
-    setState(() => isSubmitting = false);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                result['message'] ?? 'Booking submitted successfully',
+              ),
+              backgroundColor: Colors.green,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Booking submitted successfully")),
+          // show success dialog
+          _showSuccessDialog(booking);
+
+          // reset form
+          _formKey.currentState!.reset();
+          setState(() {
+            selectedEvent = null;
+            selectedDate = null;
+          });
+          nameController.clear();
+          phoneController.clear();
+          emailController.clear();
+          dateController.clear();
+          notesController.clear();
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(result['message'] ?? 'Failed to submit booking'),
+              backgroundColor: Colors.red,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: $e'),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => isSubmitting = false);
+      }
+    }
+  }
+
+  void _showSuccessDialog(BookingModel booking) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        title: Row(
+          children: [
+            Icon(Icons.check_circle, color: Colors.green, size: 28),
+            const SizedBox(width: 10),
+            Text(
+              'Booking Confirmed!',
+              style: GoogleFonts.playfair(fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Your booking has been successfully submitted.',
+              style: GoogleFonts.playfair(),
+            ),
+            const SizedBox(height: 15),
+            _bookingDetail('Name', booking.name),
+            _bookingDetail('Event', booking.eventType),
+            _bookingDetail(
+              'Date',
+              '${booking.date.day}/${booking.date.month}/${booking.date.year}',
+            ),
+            if (booking.packageName != null)
+              _bookingDetail('Package', booking.packageName!),
+            const SizedBox(height: 10),
+            Text(
+              'We\'ll contact you shortly on ${booking.phone}',
+              style: GoogleFonts.playfair(
+                fontSize: 12,
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              'Close',
+              style: GoogleFonts.playfair(color: Colors.red),
+            ),
+          ),
+        ],
+      ),
     );
+  }
 
-    _formKey.currentState!.reset();
-    dateController.clear();
+  Widget _bookingDetail(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 5),
+      child: Row(
+        children: [
+          Text(
+            '$label: ',
+            style: GoogleFonts.playfair(fontWeight: FontWeight.bold),
+          ),
+          Text(value, style: GoogleFonts.playfair()),
+        ],
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    final isMobile = Responsive.isMobile(context);
+
     return Scaffold(
       body: Stack(
         children: [
@@ -100,15 +252,11 @@ class _BookingpageState extends State<Bookingpage> {
             child: Center(
               child: Column(
                 children: [
-                  const SizedBox(height: 100),
-
-                  title(),
-
+                  SizedBox(height: isMobile ? 80 : 100),
+                  title(isMobile),
                   const SizedBox(height: 30),
-
-                  bookingForm(),
-
-                  const SizedBox(height: 120),
+                  bookingForm(isMobile),
+                  SizedBox(height: isMobile ? 60 : 120),
                 ],
               ),
             ),
@@ -145,11 +293,11 @@ class _BookingpageState extends State<Bookingpage> {
   }
 
   // title
-  Widget title() {
+  Widget title(bool isMobile) {
     return Text(
       "Book Appointment",
       style: GoogleFonts.playfair(
-        fontSize: 36,
+        fontSize: isMobile ? 28 : 36,
         fontWeight: FontWeight.bold,
         color: Colors.white,
       ),
@@ -157,10 +305,11 @@ class _BookingpageState extends State<Bookingpage> {
   }
 
   // form
-  Widget bookingForm() {
+  Widget bookingForm(bool isMobile) {
     return Container(
-      padding: const EdgeInsets.all(28),
-      constraints: const BoxConstraints(maxWidth: 500),
+      padding: EdgeInsets.all(isMobile ? 20 : 28),
+      margin: EdgeInsets.symmetric(horizontal: isMobile ? 20 : 0),
+      constraints: BoxConstraints(maxWidth: isMobile ? double.infinity : 400),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
@@ -175,7 +324,8 @@ class _BookingpageState extends State<Bookingpage> {
             buildField(
               controller: nameController,
               hint: "Full Name",
-              validator: (v) => v!.isEmpty ? "Name is required" : null,
+              validator: (v) =>
+                  v == null || v.isEmpty ? "Name is required" : null,
             ),
 
             buildField(
@@ -183,17 +333,22 @@ class _BookingpageState extends State<Bookingpage> {
               hint: "Phone Number",
               keyboard: TextInputType.phone,
               formatter: FilteringTextInputFormatter.digitsOnly,
-              validator: (v) => v!.length < 10 ? "Enter valid phone" : null,
+              validator: (v) =>
+                  v == null || v.length < 10 ? "Enter valid phone" : null,
             ),
 
             buildField(
               controller: emailController,
               hint: "Email Address",
               keyboard: TextInputType.emailAddress,
-              validator: (v) => !v!.contains("@") ? "Enter valid email" : null,
+              validator: (v) {
+                if (v == null || v.isEmpty) return "Email is required";
+                if (!v.contains("@") || !v.contains(".")) {
+                  return "Enter valid email";
+                }
+                return null;
+              },
             ),
-
-            const SizedBox(height: 12),
 
             // event type
             DropdownButtonFormField<String>(
@@ -201,7 +356,16 @@ class _BookingpageState extends State<Bookingpage> {
                 textStyle: TextStyle(color: Colors.black),
               ),
               value: selectedEvent,
-              hint: Text("Event Type"),
+              hint: Text(
+                "Event Type",
+                style: GoogleFonts.playfair(
+                  color: Colors.grey[700],
+                  textStyle: TextStyle(
+                    fontStyle: FontStyle.italic,
+                    fontSize: 16,
+                  ),
+                ),
+              ),
               decoration: input("Event Type"),
               dropdownColor: Colors.white,
               items: eventTypes
@@ -230,9 +394,26 @@ class _BookingpageState extends State<Bookingpage> {
               ),
               controller: dateController,
               readOnly: true,
-              decoration: input("Preferred Date"),
+              decoration: input("Preferred Date").copyWith(
+                suffixIcon: Icon(Icons.calendar_today, color: Colors.grey[700]),
+              ),
               onTap: pickDate,
-              validator: (v) => v!.isEmpty ? "Select a date" : null,
+              validator: (v) => v == null || v.isEmpty ? "Select a date" : null,
+            ),
+
+            const SizedBox(height: 12),
+
+            // notes field
+            TextFormField(
+              style: GoogleFonts.playfair(
+                textStyle: TextStyle(color: Colors.black),
+              ),
+              controller: notesController,
+              maxLines: 4,
+              decoration: input("Additional Notes (Optional)").copyWith(
+                hintText: "Any special requests or details...",
+                alignLabelWithHint: true,
+              ),
             ),
 
             const SizedBox(height: 25),
@@ -280,13 +461,20 @@ class _BookingpageState extends State<Bookingpage> {
           ),
           onPressed: isSubmitting ? null : submitForm,
           child: isSubmitting
-              ? const CircularProgressIndicator(color: Colors.white)
+              ? SizedBox(
+                  height: 20,
+                  width: 20,
+                  child: const CircularProgressIndicator(
+                    color: Colors.white,
+                    strokeWidth: 2,
+                  ),
+                )
               : Text(
                   "Submit Booking",
                   style: GoogleFonts.playfair(
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
-                    color: Colors.white
+                    color: Colors.white,
                   ),
                 ),
         ),
@@ -311,6 +499,14 @@ class _BookingpageState extends State<Bookingpage> {
       ),
       enabledBorder: OutlineInputBorder(
         borderSide: BorderSide(width: 1.5, color: Colors.grey),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      errorBorder: OutlineInputBorder(
+        borderSide: BorderSide(width: 1.5, color: Colors.red.shade300),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      focusedErrorBorder: OutlineInputBorder(
+        borderSide: BorderSide(width: 2, color: Colors.red),
         borderRadius: BorderRadius.circular(10),
       ),
       border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
