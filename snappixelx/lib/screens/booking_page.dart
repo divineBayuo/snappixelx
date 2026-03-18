@@ -355,7 +355,7 @@ class _BookingpageState extends State<Bookingpage> {
               style: GoogleFonts.playfair(
                 textStyle: TextStyle(color: Colors.black),
               ),
-              value: selectedEvent,
+              initialValue: selectedEvent,
               hint: Text(
                 "Event Type",
                 style: GoogleFonts.playfair(

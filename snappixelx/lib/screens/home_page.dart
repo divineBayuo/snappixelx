@@ -7,6 +7,7 @@ import 'package:snappixelx/widgets/footer.dart';
 import 'package:snappixelx/widgets/hover_scale.dart';
 import 'package:snappixelx/widgets/navbar.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:video_player/video_player.dart';
 
 class Homepage extends StatefulWidget {
   const Homepage({super.key});
@@ -20,6 +21,7 @@ class _HomepageState extends State<Homepage> with TickerProviderStateMixin {
   late AnimationController _heroController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
+  late VideoPlayerController _videoController;
 
   // Social media links
   final String instagramUrl = 'https://instagram.com/snappixelx';
@@ -47,10 +49,19 @@ class _HomepageState extends State<Homepage> with TickerProviderStateMixin {
     ).animate(_fadeAnimation);
 
     _heroController.forward();
+
+    _videoController = VideoPlayerController.asset('assets/hero1.mp4')
+      ..initialize().then((_) {
+        setState(() {});
+      })
+      ..setLooping(true)
+      ..setVolume(0)
+      ..play();
   }
 
   @override
   void dispose() {
+    _videoController.dispose();
     _heroController.dispose();
     super.dispose();
   }
@@ -134,73 +145,103 @@ class _HomepageState extends State<Homepage> with TickerProviderStateMixin {
   }
 
   Widget _buildHeroSection(bool isMobile) {
-    return Container(
+    return SizedBox(
       height: isMobile ? 400 : 600,
-      decoration: const BoxDecoration(
-        image: DecorationImage(
-          image: AssetImage('assets/hero.jpg'),
-          fit: BoxFit.cover,
-        ),
-      ),
-      child: TweenAnimationBuilder(
-        tween: Tween(begin: 1.0, end: 1.05),
-        duration: const Duration(seconds: 2),
-        builder: (context, scale, child) {
-          return Transform.scale(scale: scale, child: child);
-        },
-        child: Container(
-          color: Colors.black.withOpacity(0.5),
-          child: Center(
-            child: FadeTransition(
-              opacity: _fadeAnimation,
-              child: SlideTransition(
-                position: _slideAnimation,
-                child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: isMobile ? 20 : 0),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        'Capturing Timeless Moments...',
-                        textAlign: TextAlign.center,
-                        style: GoogleFonts.playfair(
-                          textStyle: TextStyle(
-                            fontSize: isMobile ? 28 : 48,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          Positioned.fill(
+            child: ClipRect(
+              child: _videoController.value.isInitialized
+                  ? FittedBox(
+                      fit: BoxFit.cover,
+                      child: SizedBox(
+                        width: _videoController.value.size.width,
+                        height: _videoController.value.size.height,
+                        child: VideoPlayer(_videoController),
+                      ),
+                    )
+                  : Container(color: Colors.black),
+            ),
+          ),
+
+          // dark overlay
+          Positioned.fill(
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Colors.black.withOpacity(0.7),
+                    Colors.black.withOpacity(0.3),
+                    Colors.black.withOpacity(0.7),
+                  ],
+                  begin: Alignment.bottomCenter,
+                  end: Alignment.topCenter,
+                ),
+              ),
+            ),
+          ),
+
+          TweenAnimationBuilder(
+            tween: Tween(begin: 1.0, end: 1.05),
+            duration: const Duration(seconds: 2),
+            builder: (context, scale, child) {
+              return Transform.scale(scale: scale, child: child);
+            },
+            child: Center(
+              child: FadeTransition(
+                opacity: _fadeAnimation,
+                child: SlideTransition(
+                  position: _slideAnimation,
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: isMobile ? 20 : 0,
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          'Capturing Timeless Moments...',
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.playfair(
+                            textStyle: TextStyle(
+                              fontSize: isMobile ? 28 : 48,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
                           ),
                         ),
-                      ),
-                      const SizedBox(height: 20),
-                      HoverScale(
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            foregroundColor: Colors.black,
-                            backgroundColor: Colors.white,
-                            padding: EdgeInsets.symmetric(
-                              horizontal: isMobile ? 20 : 28,
-                              vertical: isMobile ? 12 : 16,
+                        const SizedBox(height: 20),
+                        HoverScale(
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              foregroundColor: Colors.black,
+                              backgroundColor: Colors.white,
+                              padding: EdgeInsets.symmetric(
+                                horizontal: isMobile ? 20 : 28,
+                                vertical: isMobile ? 12 : 16,
+                              ),
+                              elevation: 10,
                             ),
-                            elevation: 10,
-                          ),
-                          onPressed: () =>
-                              Navigator.pushNamed(context, '/booking'),
-                          child: Text(
-                            'Book Session',
-                            style: GoogleFonts.playfair(
-                              color: Colors.black,
-                              fontSize: isMobile ? 14 : 16,
+                            onPressed: () =>
+                                Navigator.pushNamed(context, '/booking'),
+                            child: Text(
+                              'Book Session',
+                              style: GoogleFonts.playfair(
+                                color: Colors.black,
+                                fontSize: isMobile ? 14 : 16,
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -451,7 +492,7 @@ class _HomepageState extends State<Homepage> with TickerProviderStateMixin {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 300),
         width: isMobile ? 150 : 250,
-        height: isMobile ? 120 :200,
+        height: isMobile ? 120 : 200,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(15),
           boxShadow: [
