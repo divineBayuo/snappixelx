@@ -266,10 +266,30 @@ class _HomepageState extends State<Homepage> with TickerProviderStateMixin {
             runSpacing: 20,
             alignment: WrapAlignment.center,
             children: [
-              serviceCard("Wedding", 'assets/wedding.jpg', isMobile),
-              serviceCard("Portrait", 'assets/portrait.jpg', isMobile),
-              serviceCard("Commercial", 'assets/graduation.jpg', isMobile),
-              serviceCard("Events", 'assets/event.jpg', isMobile),
+              serviceCard(
+                "Portraits",
+                'assets/portraits.jpg',
+                isMobile,
+                category: 'Portraits',
+              ),
+              serviceCard(
+                "Corporate \nEvents",
+                'assets/corporateEvents.jpg',
+                isMobile,
+                category: 'Corporate Events',
+              ),
+              serviceCard(
+                "Professional \nHeadshots",
+                'assets/professionalHeadshots.jpg',
+                isMobile,
+                category: 'Professional Headshots',
+              ),
+              serviceCard(
+                "Real Estates & \nArchitectural",
+                'assets/realEstates.jpg',
+                isMobile,
+                category: 'Real Estates & Architectural',
+              ),
             ],
           ),
         ],
@@ -487,49 +507,58 @@ class _HomepageState extends State<Homepage> with TickerProviderStateMixin {
     );
   }
 
-  Widget serviceCard(String title, String image, bool isMobile) {
+  Widget serviceCard(
+    String title,
+    String image,
+    bool isMobile, {
+    String? category,
+  }) {
     return HoverScale(
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        width: isMobile ? 150 : 250,
-        height: isMobile ? 120 : 200,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(15),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.3),
-              blurRadius: 15,
-              offset: const Offset(0, 8),
-            ),
-          ],
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(15),
-          child: Stack(
-            children: [
-              // zoom efx
-              Positioned.fill(child: Image.asset(image, fit: BoxFit.cover)),
-
-              // dark overlay
-              Positioned.fill(
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 250),
-                  color: Colors.black.withOpacity(0.45),
-                ),
-              ),
-
-              /// Title
-              Center(
-                child: Text(
-                  title,
-                  style: GoogleFonts.playfair(
-                    fontSize: isMobile ? 16 : 22,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
+      child: GestureDetector(
+        onTap: () =>
+            Navigator.pushNamed(context, '/portfolio', arguments: category),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          width: isMobile ? 150 : 250,
+          height: isMobile ? 120 : 200,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(15),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.3),
+                blurRadius: 15,
+                offset: const Offset(0, 8),
               ),
             ],
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(15),
+            child: Stack(
+              children: [
+                // zoom efx
+                Positioned.fill(child: Image.asset(image, fit: BoxFit.cover)),
+
+                // dark overlay
+                Positioned.fill(
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 250),
+                    color: Colors.black.withOpacity(0.45),
+                  ),
+                ),
+
+                /// Title
+                Center(
+                  child: Text(
+                    title,
+                    style: GoogleFonts.playfair(
+                      fontSize: isMobile ? 16 : 22,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

@@ -1,0 +1,20 @@
+[
+  { "category": "Portraits", "path": "assets/portraits.jpg" },
+  { "category": "Corporate Events", "path": "assets/corporateEvents.jpg" },
+  {
+    "category": "Professional Headshots",
+    "path": "assets/professionalHeadshots.jpg"
+  },
+  {
+    "category": "Real Estates & Architectural",
+    "path": "assets/realEstates.jpg"
+  },
+  { "category": "Corporate Events", "path": "assets/birthday.jpg" },
+  {
+    "category": "Real Estates & Architectural",
+    "path": "assets/graduation.jpg"
+  },
+  { "category": "Portraits", "path": "assets/portrait.jpg" },
+  { "category": "Professional Headshots", "path": "assets/wedding.jpg" },
+  { "category": "Corporate Events", "path": "assets/event.jpg" }
+]
