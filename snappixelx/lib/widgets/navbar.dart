@@ -22,7 +22,8 @@ class _NavBarState extends State<NavBar> {
   bool _isMenuOpen = false;
 
   final List<Map<String, String>> tabs = [
-    {"title": "Home", "route": "/"},
+    //{"title": "EO", "route": "/"},
+    {"title": "Home", "route": "/home"},
     {"title": "Pricing", "route": "/pricing"},
     {"title": "Portfolio", "route": "/portfolio"},
     {"title": "Booking", "route": "/booking"},

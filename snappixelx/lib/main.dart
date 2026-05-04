@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:snappixelx/screens/booking_page.dart';
 import 'package:snappixelx/screens/home_page.dart';
+import 'package:snappixelx/screens/landing_page.dart';
 import 'package:snappixelx/screens/price_page.dart';
 import 'package:snappixelx/screens/ref_page.dart';
 
@@ -17,8 +18,10 @@ class MyApp extends StatelessWidget {
       title: 'Photography Portfolio',
       debugShowCheckedModeBanner: false,
       theme: ThemeData.dark(),
+      initialRoute: '/',
       routes: {
-        '/': (context) => const Homepage(),
+        '/': (context) => const LandingPage(),
+        '/home': (context) => const Homepage(),
         '/pricing': (context) => const Pricingpage(),
         '/portfolio': (context) => const Refpage(),
         '/booking': (context) => const Bookingpage(),
